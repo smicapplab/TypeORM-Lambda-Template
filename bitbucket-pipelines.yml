@@ -1,0 +1,74 @@
+image: node:18
+
+definitions:
+  caches:
+    node-project:
+      key:
+        files: 
+          - package-lock.json
+      path: ./node_modules 
+  steps: 
+    - step: &install_cdk
+        name: Install CDK
+        caches:
+          - node
+        script:
+          - npm install -g aws-cdk
+    - step: &install_project_dependencies
+        name: Install Project Dependencies
+        caches:
+          - node-project
+        script:
+          - npm install
+    - step: &build_resolver
+        name: Build Resolver Lambda Function
+        caches:
+          - node-project
+        script:
+          - npm run build --prefix ./src/lambda
+        artifacts:
+          - src/lambda/build/**
+    - step: &run_cdk_deploy
+        name: Run CDK Deploy
+        oidc: true
+        caches:
+          - node
+          - node-project
+        max-time: 5
+        script: 
+          - export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token  
+          - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
+          - npx cdk deploy -c environment=$ENVIRONMENT --require-approval never
+    - step: &run_cdk_synth
+        name: Run CDK Synth
+        oidc: true
+        caches:
+          - node
+          - node-project
+        script: 
+          - export AWS_WEB_IDENTITY_TOKEN_FILE=$(pwd)/web-identity-token  
+          - echo $BITBUCKET_STEP_OIDC_TOKEN > $(pwd)/web-identity-token
+          - npx cdk synth -c environment=$ENVIRONMENT --require-approval 
+
+pipelines:
+  branches:
+    '{develop,testing}':
+      - parallel:
+        - step: *install_cdk
+        - step: *install_project_dependencies
+      - stage: 
+          name: "Build and Deploy"
+          deployment: Develop
+          steps:
+            - step: *build_resolver
+            - step: *run_cdk_deploy
+    '{main,master}':
+      - parallel:
+        - step: *install_cdk
+        - step: *install_project_dependencies
+      - stage: 
+          name: "Build and Deploy"
+          deployment: Production
+          steps:
+            - step: *build_resolver
+            - step: *run_cdk_deploy

@@ -1,0 +1,17 @@
+type Item {
+    id: ID!
+    name: String!
+}
+
+type Query {
+    getItems: [Item!]!
+}
+
+type Mutation {
+    addItem(name: String!): Item!
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+}
