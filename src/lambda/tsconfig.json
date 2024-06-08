@@ -25,6 +25,10 @@
       },
     "include": [
         "src/**/*"
+,       "data", 
+        "repositories", 
+        "services", 
+        "handler.ts"
     ],
     "exclude": [
         "node_modules",

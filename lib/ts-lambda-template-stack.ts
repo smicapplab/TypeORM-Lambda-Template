@@ -56,6 +56,13 @@ export class TsLambdaTemplateStack extends cdk.Stack {
       apiId: api.attrApiId
     });
 
+    // Create Lambda Layer
+    const lambdaLayer = new lambda.LayerVersion(this, 'TemplateLayer', {
+      code: lambda.Code.fromAsset('src/lambda/layer'),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+      description: 'A layer for my Lambda Template',
+    });
+
     // Create Lambda Function
     const lambdaFunction = new lambda.Function(this, 'LambdaFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -66,6 +73,7 @@ export class TsLambdaTemplateStack extends cdk.Stack {
         dbName: 'appsyncdb'
       },
       vpc,
+      layers: [lambdaLayer],
     });
 
     // Grant Secrets Manager permissions to Lambda

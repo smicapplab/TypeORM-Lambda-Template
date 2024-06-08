@@ -1,0 +1,16 @@
+{
+  "name": "lambdas-dependencies",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "Steve Pogi",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "aws-cdk-lib": "^2.140.0",
+    "aws-lambda": "^1.0.7",
+    "constructs": "^10.3.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
+  }
+}
